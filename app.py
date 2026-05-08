@@ -1,0 +1,72 @@
+import streamlit as st
+import joblib
+import pandas as pd
+import os
+
+st.set_page_config(page_title="Sistem Prediksi KTW", layout="wide")
+
+@st.cache_resource
+def load_all_files():
+    try:
+        # Streamlit Cloud akan membaca file yang satu folder dengannya
+        model = joblib.load('model_terbaik (1).joblib')
+        features = joblib.load('fitur_model1 (1).joblib')
+        X_val = joblib.load('X_val.joblib')
+        y_val = joblib.load('y_val.joblib')
+        return model, features, X_val, y_val
+    except Exception as e:
+        st.error(f"Gagal memuat file model: {e}")
+        return None, None, None, None
+
+model, features, X_val, y_val = load_all_files()
+
+# --- SIDEBAR NAVIGASI ---
+st.sidebar.title("Menu Utama")
+choice = st.sidebar.radio("Pilih Halaman:", ["Input Prediksi Manual", "Daftar Data Validasi (10%)"])
+
+if model is not None:
+    if choice == "Input Prediksi Manual":
+        st.title("🎓 Prediksi Kelulusan Tepat Waktu Mahasiswa")
+        st.write("Masukkan data akademik mahasiswa di bawah ini:")
+
+        with st.form("my_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                status = st.selectbox("Status [0:Aktif, 1:Lulus]", [0, 1])
+                ipk = st.number_input("IPK", 0.0, 4.0, 3.5, step=0.01)
+                gender = st.radio("Gender [1:L, 2:P]", [1, 2])
+            with col2:
+                smt_prop = st.number_input("Semester Proposal", 0, 14, 7)
+                smt_hasil = st.number_input("Semester Hasil", 0, 14, 8)
+            
+            submit = st.form_submit_button("Cek Prediksi")
+
+        if submit:
+            if smt_hasil > 0 and smt_prop > 0 and smt_hasil < smt_prop:
+                st.error("⚠️ Error: Seminar Hasil tidak boleh mendahului Seminar Proposal!")
+            else:
+                # Urutan: Status, Smt Hasil, IPK, Smt Prop, Gender
+                input_data = [[status, smt_hasil, ipk, smt_prop, gender]]
+                prediction = model.predict(input_data)[0]
+                proba = model.predict_proba(input_data)[0]
+
+                st.divider()
+                if prediction == 1: # KTW
+                    st.success(f"HASIL: **KTW (Lulus Tepat Waktu)**")
+                else: # Non-KTW
+                    st.warning(f"HASIL: **Non-KTW (Lulus Terlambat)**")
+                
+                st.write(f"Probabilitas KTW: {proba[1]*100:.2f}% | Non-KTW: {proba[0]*100:.2f}%")
+
+    elif choice == "Daftar Data Validasi (10%)":
+        st.title("📊 Data Validasi")
+        st.write("Ini adalah 10% dataset yang digunakan untuk menguji akurasi model.")
+        
+        df_val = pd.DataFrame(X_val, columns=features)
+        df_val['Label Asli'] = y_val
+        df_val['Keterangan'] = df_val['Label Asli'].map({1: 'KTW', 0: 'Non-KTW'})
+        
+        st.dataframe(df_val, use_container_width=True)
+        st.info("💡 **Tips:** Ambil data dari sini untuk ngetes di menu Prediksi Manual.")
+else:
+    st.error("Model tidak ditemukan.")
