@@ -58,13 +58,27 @@ Hasil prediksi akan menampilkan:
 - **Non-KTW (Tidak Tepat Waktu)**
 
 
-## Struktur Repository
-├── app.py # Aplikasi utama Streamlit
-├── model_terbaik (1).joblib # Model ML terbaik
-├── fitur_model1 (1).joblib # Daftar fitur yang digunakan
-├── X_val.joblib # Data validasi
-├── y_val.joblib # Label validasi
-├── requirements.txt # Library yang dibutuhkan
-└── README.md # Dokumentasi proyek
+##  Struktur Repository
+
+```
+Sistem_Prediksi_KTW/
+├── app.py
+├── model_terbaik (1).joblib
+├── fitur_model1 (1).joblib
+├── X_val.joblib
+├── y_val.joblib
+├── requirements.txt
+└── README.md
+```
+
+###  Keterangan
+
+- `app.py` : Aplikasi utama Streamlit
+- `model_terbaik (1).joblib` : Model Machine Learning terbaik
+- `fitur_model1 (1).joblib` : Daftar fitur yang digunakan model
+- `X_val.joblib` : Data validasi (fitur)
+- `y_val.joblib` : Label data validasi
+- `requirements.txt` : Daftar library yang dibutuhkan
+- `README.md` : Dokumentasi proyek
 
 
