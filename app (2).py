@@ -2,14 +2,13 @@ import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
-import os
 
 st.set_page_config(page_title="Sistem Prediksi KTW", layout="wide")
 
 @st.cache_resource
 def load_all_files():
     try:
-        # Membaca file joblib versi (2) dan (1) yang kamu upload
+        # Membaca file joblib versi (2) dan (1)
         model = joblib.load('model_terbaik (2).joblib')
         features = joblib.load('fitur_model1 (2).joblib')
         X_val = joblib.load('X_val (1).joblib')
@@ -82,29 +81,25 @@ if model is not None:
         st.write("Ini adalah 10% dataset yang digunakan untuk menguji akurasi model.")
         
         try:
-            # 1. Konversi data dasar menjadi numpy array
-            X_val_clean = np.array(X_val)
-            y_val_clean = np.array(y_val).reshape(-1, 1)
+            # Mengonversi numpy array langsung menjadi DataFrame murni tanpa paksaan indeks
+            df_X = pd.DataFrame(X_val)
+            df_y = pd.DataFrame(y_val)
             
-            # 2. Gabungkan X dan y
-            data_gabung = np.column_stack((X_val_clean, y_val_clean))
-            kolom_df = list(features) + ['Kelas']
+            # Gabungkan secara horizontal (berdampingan)
+            df_val = pd.concat([df_X, df_y], axis=1)
             
-            # 3. Buat DataFrame awal
-            df_val = pd.DataFrame(data_gabung, columns=kolom_df)
+            # Beri nama kolom secara manual berdasarkan urutan indeks aslinya
+            # Urutan bawaan X_val kamu: Status, Smt Hasil, IPK, Smt Prop, Gender + Kelas (y_val)
+            df_val.columns = ['Status', 'Smt Hasil', 'IPK', 'Smt Prop', 'L(1)/P(2)', 'Kelas']
             
-            # PENTING: Paksa kolom kategori agar menjadi angka bulat (int) 
-            # supaya fungsi .map() tidak error akibat membaca desimal (.0)
-            df_val['Status'] = df_val['Status'].astype(int)
-            df_val['L(1)/P(2)'] = df_val['L(1)/P(2)'].astype(int)
-            df_val['Smt Prop'] = df_val['Smt Prop'].astype(int)
-            df_val['Smt Hasil'] = df_val['Smt Hasil'].astype(int)
-            df_val['Kelas'] = df_val['Kelas'].astype(int)
+            # Pastikan semua kolom kategori diubah ke angka bulat (int)
+            for col in ['Status', 'Smt Hasil', 'Smt Prop', 'L(1)/P(2)', 'Kelas']:
+                df_val[col] = df_val[col].astype(int)
             
-            # 4. Buat Terjemahan Keterangan Kelulusan
+            # Buat teks Keterangan
             df_val['Keterangan'] = df_val['Kelas'].map({1: 'KTW', 0: 'Non-KTW'})
             
-            # 5. Atur ulang urutan kolom tabel
+            # Atur ulang urutan kolom sesuai request-mu:
             kolom_pilihan = [
                 'Status', 
                 'L(1)/P(2)', 
@@ -116,7 +111,7 @@ if model is not None:
             ]
             df_val_reordered = df_val[kolom_pilihan]
             
-            # 6. Mengubah nama kolom menjadi versi panjang formal untuk Dosen
+            # Mengubah singkatan kolom menjadi teks lengkap untuk tampilan Dosen
             df_display = df_val_reordered.rename(columns={
                 'Status': 'Status Mahasiswa',
                 'L(1)/P(2)': 'Jenis Kelamin',
