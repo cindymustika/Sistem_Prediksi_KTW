@@ -10,7 +10,7 @@ def load_all_files():
     try:
         # Nama file dibuat bersih tanpa angka kurung agar tidak membingungkan GitHub
         model = joblib.load('model_terbaik.joblib')
-        features = joblib.load('fitur_model1.joblib')
+        features = joblib.load('fitur_model.joblib')
         X_val = joblib.load('X_val.joblib')
         y_val = joblib.load('y_val.joblib')
         return model, features, X_val, y_val
