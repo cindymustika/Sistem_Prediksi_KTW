@@ -95,9 +95,9 @@ if model is not None:
             df_val_reordered = df_val[kolom_pilihan]
             
             df_display = df_val_reordered.rename(columns={
-                'Status': 'Status Mahasiswa',
-                'L(1)/P(2)': 'Jenis Kelamin',
-                'IPK': 'Indeks Prestasi Kumulatif (IPK)',
+                'Status': 'Status (0=Aktif; 1=Lulus)',
+                'L(1)/P(2)': 'Gender L[1]/P[2]',
+                'IPK': 'IPK',
                 'Smt Prop': 'Semester Seminar Proposal',
                 'Smt Hasil': 'Semester Seminar Hasil'
             })
