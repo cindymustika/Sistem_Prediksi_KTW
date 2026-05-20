@@ -8,11 +8,11 @@ st.set_page_config(page_title="Sistem Prediksi KTW", layout="wide")
 @st.cache_resource
 def load_all_files():
     try:
-        # Membaca file joblib versi (2) dan (1)
-        model = joblib.load('model_terbaik (2).joblib')
-        features = joblib.load('fitur_model1 (2).joblib')
-        X_val = joblib.load('X_val (1).joblib')
-        y_val = joblib.load('y_val (1).joblib')
+        # Nama file dibuat bersih tanpa angka kurung agar tidak membingungkan GitHub
+        model = joblib.load('model_terbaik.joblib')
+        features = joblib.load('fitur_model1.joblib')
+        X_val = joblib.load('X_val.joblib')
+        y_val = joblib.load('y_val.joblib')
         return model, features, X_val, y_val
     except Exception as e:
         st.error(f"Gagal memuat file model: {e}")
@@ -45,7 +45,6 @@ if model is not None:
             if smt_hasil > 0 and smt_prop > 0 and smt_hasil < smt_prop:
                 st.error("⚠️ Error: Seminar Hasil tidak boleh mendahului Seminar Proposal!")
             else:
-                # Urutan fitur: [Status, Smt Hasil, IPK, Smt Prop, Gender]
                 input_data = [[status, smt_hasil, ipk, smt_prop, gender]]
                 prediction = model.predict(input_data)[0]
                 proba = model.predict_proba(input_data)[0]
@@ -81,37 +80,20 @@ if model is not None:
         st.write("Ini adalah 10% dataset yang digunakan untuk menguji akurasi model.")
         
         try:
-            # Mengonversi numpy array langsung menjadi DataFrame murni tanpa paksaan indeks
             df_X = pd.DataFrame(X_val)
             df_y = pd.DataFrame(y_val)
-            
-            # Gabungkan secara horizontal (berdampingan)
             df_val = pd.concat([df_X, df_y], axis=1)
             
-            # Beri nama kolom secara manual berdasarkan urutan indeks aslinya
-            # Urutan bawaan X_val kamu: Status, Smt Hasil, IPK, Smt Prop, Gender + Kelas (y_val)
             df_val.columns = ['Status', 'Smt Hasil', 'IPK', 'Smt Prop', 'L(1)/P(2)', 'Kelas']
             
-            # Pastikan semua kolom kategori diubah ke angka bulat (int)
             for col in ['Status', 'Smt Hasil', 'Smt Prop', 'L(1)/P(2)', 'Kelas']:
                 df_val[col] = df_val[col].astype(int)
             
-            # Buat teks Keterangan
             df_val['Keterangan'] = df_val['Kelas'].map({1: 'KTW', 0: 'Non-KTW'})
             
-            # Atur ulang urutan kolom sesuai request-mu:
-            kolom_pilihan = [
-                'Status', 
-                'L(1)/P(2)', 
-                'IPK', 
-                'Smt Prop', 
-                'Smt Hasil', 
-                'Kelas', 
-                'Keterangan'
-            ]
+            kolom_pilihan = ['Status', 'L(1)/P(2)', 'IPK', 'Smt Prop', 'Smt Hasil', 'Kelas', 'Keterangan']
             df_val_reordered = df_val[kolom_pilihan]
             
-            # Mengubah singkatan kolom menjadi teks lengkap untuk tampilan Dosen
             df_display = df_val_reordered.rename(columns={
                 'Status': 'Status Mahasiswa',
                 'L(1)/P(2)': 'Jenis Kelamin',
@@ -120,7 +102,6 @@ if model is not None:
                 'Smt Hasil': 'Semester Seminar Hasil'
             })
             
-            # Tampilkan ke layar Streamlit
             st.dataframe(df_display, use_container_width=True)
             st.info("💡 **Tips:** Kamu bisa ambil data dari tabel ini untuk mencoba input manual di menu sebelah kiri.")
             
@@ -128,4 +109,4 @@ if model is not None:
             st.error(f"Gagal memproses struktur tabel data validasi: {table_error}")
 
 else:
-    st.error("Model gagal dimuat. Pastikan file joblib yang baru sudah di-upload ke GitHub.")
+    st.error("Model gagal dimuat. Pastikan file joblib sudah di-upload ke GitHub dengan benar.")
